@@ -5,5 +5,6 @@ function test () {
     console.log(a);
 }
 
+console.log('hi');
 test();//undefined
 console.log(a);//0
