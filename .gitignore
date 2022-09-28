@@ -2,4 +2,5 @@ node_modules/
 logs/
 .upm/
 .config/
+debug/
 .env
