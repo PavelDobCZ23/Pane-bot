@@ -105,6 +105,7 @@ async function asyncReadFile(filepath, options = null) {
     });
     switch (ctx.options.getSubcommand(false)) {
         case 'open':
+            console.log(ctx);
             if (!ctx.channel.isDMBased()) {
                 ctx.reply('Modmail should be only opened in direct messages!');
                 return;
