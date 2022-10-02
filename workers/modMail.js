@@ -128,7 +128,7 @@ async function asyncReadFile(filepath, options = null) {
             'Date Closed: N/A',
             `Reason Opened: ${ctx.options.getString('reason')}`,
             'Reason Closed: N/A',
-            '','Messages:'].join('\n');
+            '','Messages:\n'].join('\n');
             fs.writeFile(logPath,logFile,(error) => {
                 if (error) throw error;
             });
