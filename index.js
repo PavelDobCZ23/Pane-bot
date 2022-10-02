@@ -27,6 +27,7 @@ const client = new Client({
     GatewayIntentBits.DirectMessageReactions
   ]
 });
+
 const commandParser = new CommandParser(client);
 
 client.once('ready', async () => {

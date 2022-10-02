@@ -2,6 +2,7 @@ require('dotenv').config();
 const config = require('./../config.json');
 const mysql = require('mysql2');
 const { SlashCommandBuilder, Client, Interaction, EmbedBuilder} = require('discord.js');
+
 class LevelsWorker {
 /**
  * @param {Client} client 

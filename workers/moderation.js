@@ -9,6 +9,7 @@ class ModerationWorker {
             if (message.mentions?.members?.has('349561249769455617') && !message.member?.permissions?.has('ManageMessages')) {
               await message.reply('Don\'t ping him man....');
               await message.member.timeout(1000 * 60, 'Pinging the owner.');
+              
             }
         });
     }

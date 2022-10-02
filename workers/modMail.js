@@ -57,7 +57,7 @@ class ModmailWorker {
             } else {
                 return
             }
-            //Log
+            //Log file
             fs.appendFile(path.resolve(`./logs/modmail/${member.id}.txt`),logLine,(error) => {
                 if (error) throw error
             });

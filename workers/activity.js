@@ -6,7 +6,6 @@ class ActivityWorker {
     }
 
     execute() {
-        
     }
     #client = null;
 }

@@ -53,7 +53,6 @@ class CommandParser {
   #client = null;
   #rest = null;
   #commands = {};
-
 }
 
 module.exports = {
