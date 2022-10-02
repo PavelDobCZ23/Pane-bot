@@ -16,7 +16,7 @@ class ModmailWorker {
             host: config.database.host,
             user: process.env.DB_USER,
             password: process.env.DB_PASSWORD,
-            database: 'modmail'
+            database: config.database.name
         });
         connection.connect((err) => {
             if (err) throw err;
@@ -27,7 +27,7 @@ class ModmailWorker {
             let logLine, guild, messageEmbed, member;
             if (message.content.startsWith('!!') || message.author.bot) return;
             if (message.channel.isDMBased()) {
-                const lookupMember = await queryResult(`SELECT * FROM open_mails WHERE member_id = '${message.author.id}'`, connection);
+                const lookupMember = await queryResult(`SELECT * FROM open_modmails WHERE member_id = '${message.author.id}'`, connection);
                 if (lookupMember.length) {
                     const addedAttachments = message.attachments.size ? '(attached file/s)' : '';
                     guild = this.#client.guilds.cache.get(config.guildId);
@@ -41,7 +41,7 @@ class ModmailWorker {
                     
                 }
             } else if (message.channel.parentId === config.modmail.categoryId) {
-                const lookupChannel = await queryResult(`SELECT * FROM open_mails WHERE channel_id = '${message.channelId}'`, connection);
+                const lookupChannel = await queryResult(`SELECT * FROM open_modmails WHERE channel_id = '${message.channelId}'`, connection);
                 if (lookupChannel.length) {
                     const addedAttachments = message.attachments.size ? '(attached file/s)' : '';
                     guild = message.guild;
@@ -98,7 +98,7 @@ async function asyncReadFile(filepath, options = null) {
         host: config.database.host,
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
-        database: 'modmail'
+        database: config.database.name
     });
     connection.connect((error) => {
         if (error) throw error;
@@ -109,7 +109,7 @@ async function asyncReadFile(filepath, options = null) {
             //    ctx.reply('Modmail should be only opened in direct messages!');
             //    return;
             //}
-            const memberLookup = await queryResult(`SELECT * FROM open_mails WHERE member_id = '${ctx.user.id}'`, connection);
+            const memberLookup = await queryResult(`SELECT * FROM open_modmails WHERE member_id = '${ctx.user.id}'`, connection);
             if (memberLookup.length) {
                 ctx.reply('You can only have one ticket open at a time!');
                 break;
@@ -134,7 +134,7 @@ async function asyncReadFile(filepath, options = null) {
             });
 
             //Database 2nd part
-            connection.query(`INSERT INTO open_mails (member_id, channel_id) VALUES (${ctx.user.id}, ${channel.id})`, (error) => {
+            connection.query(`INSERT INTO open_modmails (member_id, channel_id) VALUES (${ctx.user.id}, ${channel.id})`, (error) => {
                 if (error) throw error;
             });
 
@@ -150,10 +150,10 @@ async function asyncReadFile(filepath, options = null) {
             let modmailLookup;
             if (ctx.channel.isDMBased()) {
                 guild = ctx.client.guilds.cache.get(config.guildId);
-                modmailLookup = await queryResult(`SELECT * FROM open_mails WHERE member_id = '${ctx.user.id}'`,connection);
+                modmailLookup = await queryResult(`SELECT * FROM open_modmails WHERE member_id = '${ctx.user.id}'`,connection);
             } else if (ctx.channel.parentId === config.modmail.categoryId) {
                 guild = ctx.guild;
-                modmailLookup = await queryResult(`SELECT * FROM open_mails WHERE channel_id = '${ctx.channel.id}'`,connection);
+                modmailLookup = await queryResult(`SELECT * FROM open_modmails WHERE channel_id = '${ctx.channel.id}'`,connection);
             } else {
                 ctx.reply('You can only close modmail inside a ticket channel!');
                 break;
@@ -189,7 +189,7 @@ async function asyncReadFile(filepath, options = null) {
                 ctx.channel.send('Could not message the member, they might\'ve left the server.');
             }
 
-            connection.query(`DELETE FROM open_mails WHERE member_id = ${member.id}`, (error) => {
+            connection.query(`DELETE FROM open_modmails WHERE member_id = ${member.id}`, (error) => {
                 if (error) throw error
             });
 

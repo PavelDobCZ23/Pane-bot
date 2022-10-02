@@ -15,7 +15,7 @@ execute() {
         host: config.database.host,
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
-        database: 'levels'
+        database: config.database.name
     });
     connection.connect((error) => {
         if (error) throw error;
@@ -76,7 +76,7 @@ async function levelCommand(ctx) {
                 host: config.database.host,
                 user: process.env.DB_USER,
                 password: process.env.DB_PASSWORD,
-                database: 'levels'
+                database: config.database.name
             });
             connection.connect(errorCallback);
             let levelEmbed;
