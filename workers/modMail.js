@@ -105,10 +105,10 @@ async function asyncReadFile(filepath, options = null) {
     });
     switch (ctx.options.getSubcommand(false)) {
         case 'open':
-            //if (!ctx.channel.isDMBased()) {
-            //    ctx.reply('Modmail should be only opened in direct messages!');
-            //    return;
-            //}
+            if (!ctx.channel.isDMBased()) {
+                ctx.reply('Modmail should be only opened in direct messages!');
+                return;
+            }
             const memberLookup = await queryResult(`SELECT * FROM open_modmails WHERE member_id = '${ctx.user.id}'`, connection);
             if (memberLookup.length) {
                 ctx.reply('You can only have one ticket open at a time!');
