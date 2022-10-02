@@ -7,6 +7,7 @@ class CommandParser {
   */
   constructor(client) {
     client.on('interactionCreate', async (ctx) => {
+      console.log(ctx)
       if (!ctx.isChatInputCommand) return;
       const command = this.#commands[ctx.commandName];
       if (command.permissons) {
