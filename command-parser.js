@@ -1,16 +1,21 @@
 require('dotenv').config();
-const { REST, SlashCommandBuilder, Routes, Client } = require('discord.js');
-const { clientId, guildId } = require('./config.json');
+const { REST, Routes, Client, ContextMenuCommandAssertions } = require('discord.js');
 
 class CommandParser {
   /**
   * @param client {Client}
   */
   constructor(client) {
-    client.on('interactionCreate', (interaction) => {
-      if (!interaction.isChatInputCommand) return;
-      const command = this.#commands[interaction.commandName];
-      command.run(interaction);
+    client.on('interactionCreate', async (ctx) => {
+      if (!ctx.isChatInputCommand) return;
+      const command = this.#commands[ctx.commandName];
+      if (command.permissons) {
+        const check = command.permissons(ctx);
+        if (!check.passed) {
+          ctx.reply(check.message);
+        }
+      };
+      await command.run(ctx);
     });
 
     this.#client = client;
@@ -24,7 +29,7 @@ class CommandParser {
   async registerAppCommands(guildId = null) {
     const commands = [];
     for (const command in this.#commands) {
-      commands.push(this.#commands[command].commandBuild);
+      commands.push(this.#commands[command].build);
     }
     if (guildId) {
       await this.#rest.put(Routes.applicationGuildCommands(`${this.#client.user.id}`, guildId), {body: commands});
