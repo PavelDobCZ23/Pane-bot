@@ -1,3 +1,5 @@
+//! Restrict some commands to serevsr only so they can't be run in DMs
+//! Fix duplicate commands
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
