@@ -31,10 +31,10 @@ execute() {
             let level = levelData[0].level;
             let xp = levelData[0].xp;
             xp += randInt(config.levels.xpGain[0],config.levels.xpGain[1]);
-            const nextLevelXp = config.levels.baseXpRequired * config.levels.levelXpMultiplier * level;
+            const nextLevelXp = Math.ceil(config.levels.baseXpRequired + (config.levels.baseXpRequired * config.levels.levelXpMultiplier * (level - 1)));
             if (xp >= nextLevelXp) {
                 level++;
-                await message.reply('Congrats! You\'ve just leveled up!');
+                await message.reply(`Congrats! You've just leveled up to level **${level}**!`);
             }
             connection.query(`UPDATE user_levels SET level = ${level}, xp = ${xp}, last_msg = ${currentDate} WHERE id = '${message.author.id}'`);
         }
@@ -88,7 +88,8 @@ async function levelCommand(ctx) {
                 .setAuthor({name:resolveMemberName(member),iconURL: member.displayAvatarURL()})
                 .setFooter({text:`Pantopia Levelling - ${member.id}`});
             } else {
-                levelEmbed = new EmbedBuilder({title: 'Level Stats',color:member.displayColor,description:`Level:${levelData[0].level} XP: ${levelData[0].xp}`})
+                const xpRequired = Math.ceil(config.levels.baseXpRequired + (config.levels.baseXpRequired * config.levels.levelXpMultiplier * (levelData[0].level - 1)));
+                levelEmbed = new EmbedBuilder({title: 'Level Stats',color:member.displayColor,description:`Level: **${levelData[0].level}** XP: **${levelData[0].xp}**\n XP required to level up: **${xpRequired}**`})
                 .setAuthor({name:resolveMemberName(member),iconURL: member.displayAvatarURL()})
                 .setFooter({text:`Pantopia Levelling - ${member.id}`});
             }
