@@ -45,7 +45,7 @@ client.once('ready', async () => {
       }
     }
   }
-  commandParser.registerAppCommands();
+  //commandParser.registerAppCommands();
 })
 
 client.login(process.env.TOKEN);
