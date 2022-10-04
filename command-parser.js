@@ -33,11 +33,10 @@ class CommandParser {
     }
     if (guildId) {
       await this.#rest.put(Routes.applicationGuildCommands(`${this.#client.user.id}`, guildId), {body: commands});
-      console.log('Registered sucessfully.');
     } else {
       await this.#rest.put(Routes.applicationCommands(`${this.#client.user.id}`), {body: commands});
-      console.log('Registered sucessfully.');
     }
+    console.log('Registered sucessfully.');
   }
 
   async deleteAppCommands(commandIds,guildId = null) {
@@ -47,6 +46,7 @@ class CommandParser {
       } else {
         await this.#rest.delete(Routes.applicationCommand(`${this.#client.user.id}`, commandId));
       }
+      console.log('Deleted sucessfully.');
     }
   }
 
