@@ -139,7 +139,7 @@ async function asyncReadFile(filepath, options = null) {
             });
 
             //Confirmation message
-            modmailEmbed = new EmbedBuilder({title: 'Modmail Ticket Opened', color: member.displayColor, timestamp: new Date()})
+            modmailEmbed = new EmbedBuilder({title: 'Modmail Ticket Opened', color: 0xfea515, timestamp: new Date()})
                 .setAuthor({name: resolveMemberName(member), iconURL: member.displayAvatarURL()})
                 .addFields({name: 'Reason:', value: ctx.options.getString('reason')})
                 .setFooter({text: `Pantopia Modmail - ${ctx.user.id}`}).toJSON();
@@ -174,7 +174,7 @@ async function asyncReadFile(filepath, options = null) {
             })
             const attachment = new AttachmentBuilder(logPath, {name:'log-file.txt'});
 
-            modmailEmbed = new EmbedBuilder({title: 'Modmail Ticket Closed', color: member.displayColor, timestamp: new Date()})
+            modmailEmbed = new EmbedBuilder({title: 'Modmail Ticket Closed', color: 0xfea515, timestamp: new Date()})
                 .setAuthor({name: resolveMemberName(member), iconURL: member.displayAvatarURL()})
                 .addFields({name: 'Closed by:', value: `<@${ctx.user.id}>`})
                 .addFields({name: 'Closed at:', value: new Date().toUTCString()})

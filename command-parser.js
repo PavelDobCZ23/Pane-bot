@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { REST, Routes, Client, ContextMenuCommandAssertions } = require('discord.js');
+const { Client } = require('discord.js');
 
 class CommandParser {
   /**
@@ -19,7 +19,6 @@ class CommandParser {
     });
 
     this.#client = client;
-    this.#rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
   }
 
   registerCommand(name, options) {
@@ -27,31 +26,30 @@ class CommandParser {
   }
 
   async registerAppCommands(guildId = null) {
-    const commands = [];
     for (const command in this.#commands) {
-      commands.push(this.#commands[command].build);
+      if (guildId) {
+        const guild = await this.#client.guilds.fetch(guildId);
+        guild.commands.create(command);
+      } else {
+        this.#client.application.commands.create(command);
+      }
     }
-    if (guildId) {
-      await this.#rest.put(Routes.applicationGuildCommands(`${this.#client.user.id}`, guildId), {body: commands});
-    } else {
-      await this.#rest.put(Routes.applicationCommands(`${this.#client.user.id}`), {body: commands});
-    }
-    console.log('Registered sucessfully.');
+    console.log('Registered app command/s sucessfully.');
   }
 
   async deleteAppCommands(commandIds,guildId = null) {
     for (const commandId of commandIds) {
       if (guildId) {
-        await this.#rest.delete(Routes.applicationGuildCommand(`${this.#client.user.id}`, guildId, commandId));
+        const guild = await this.#client.guilds.fetch(guildId);
+        guild.commands.delete(commandId);
       } else {
-        await this.#rest.delete(Routes.applicationCommand(`${this.#client.user.id}`, commandId));
+        this.#client.application.commands.delete(commandId);
       }
-      console.log('Deleted sucessfully.');
     }
+    console.log('Deleted app command/s sucessfully.');
   }
 
   #client = null;
-  #rest = null;
   #commands = {};
 }
 
