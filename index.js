@@ -4,6 +4,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const config = require('./config.json');
+const debug = require('./debug/main.js');
 const { CommandParser } = require('./command-parser');
 const { Client, GatewayIntentBits } = require('discord.js');
 
