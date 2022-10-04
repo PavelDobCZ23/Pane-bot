@@ -48,10 +48,9 @@ client.once('ready', async () => {
       }
     }
   }
+  //Debug
+  await debug.main(client);
   //commandParser.registerAppCommands();
 })
 
 client.login(process.env.TOKEN);
-
-//Debug
-debug.main(client);
