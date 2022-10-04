@@ -49,7 +49,9 @@ client.once('ready', async () => {
     }
   }
   //Debug
-  await debug.main(client);
+  if (debug.main) {
+    await debug.main(client);
+  }
   //commandParser.registerAppCommands();
 })
 
