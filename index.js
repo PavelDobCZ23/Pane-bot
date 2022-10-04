@@ -34,6 +34,7 @@ const commandParser = new CommandParser(client);
 
 client.once('ready', async () => {
   console.log('Pane better is online!');
+  console.log(client.application.commands.cache);
   client.user.setActivity('Doin\' Stuff...');
 
   //Workers
