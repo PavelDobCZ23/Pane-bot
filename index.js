@@ -47,7 +47,7 @@ client.once('ready', async () => {
       }
     }
   }
-  console.log(client.application.commands.cache.each(command => console.log(command)));
+  client.application.commands.cache.each(command => console.log(command));
   //commandParser.registerAppCommands();
 })
 
