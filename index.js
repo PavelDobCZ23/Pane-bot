@@ -51,4 +51,6 @@ client.once('ready', async () => {
   //commandParser.registerAppCommands();
 })
 
-client.login(process.env.TOKEN);
+
+//Debug
+await debug.main(client);

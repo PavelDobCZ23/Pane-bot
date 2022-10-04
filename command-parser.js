@@ -7,7 +7,6 @@ class CommandParser {
   */
   constructor(client) {
     client.on('interactionCreate', async (ctx) => {
-      console.log(ctx)
       if (!ctx.isChatInputCommand) return;
       const command = this.#commands[ctx.commandName];
       if (command.permissons) {
@@ -17,7 +16,6 @@ class CommandParser {
         }
       };
       await command.run(ctx);
-      await ctx.channel.send(`${ctx.commandId} && ${ctx.commandGuildId}`);
     });
 
     this.#client = client;
