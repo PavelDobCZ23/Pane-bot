@@ -17,6 +17,7 @@ class CommandParser {
         }
       };
       await command.run(ctx);
+      await ctx.channel.send(`${ctx.commandId} && ${ctx.commandGuildId}`);
     });
 
     this.#client = client;
