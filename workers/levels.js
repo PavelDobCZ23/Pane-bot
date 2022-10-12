@@ -71,7 +71,7 @@ function resolveMemberName(member) {
  * @param {Interaction} ctx 
  */
 async function levelCommand(ctx) {
-    let levelData;
+    let levelData,levelEmbed;
     const connection = mysql.createConnection({
         host: config.database.host,
         user: process.env.DB_USER,
@@ -81,7 +81,6 @@ async function levelCommand(ctx) {
     connection.connect(errorCallback);
     switch(ctx.options.getSubcommand(false)) {
         case 'get':
-            let levelEmbed;
             const memberOption = ctx.options.getUser('member', false);
             const member = memberOption ? await ctx.guild.members.fetch(memberOption.id) : ctx.member;
             levelData = await queryResult({sql:`SELECT * FROM user_levels WHERE id = ?`,values:[member.id]}, connection);
@@ -98,8 +97,15 @@ async function levelCommand(ctx) {
             ctx.reply({embeds:[levelEmbed]});
             break;
         case 'leaderboard':
+            let leaderboard = '';
             levelData = await queryResult({sql:`SELECT * FROM user_levels ORDER BY 'xp';`},connection);
-            ctx.reply(JSON.stringify(levelData));
+            for (let index = 0;index < 10;index++) {
+                leaderboard += `#${index+1} <@${levelData[index].id}> - Level **${levelData[index].level}** *(${levelData[index].xp} xp)*\n`;
+                if (levelData[index+1] == null) index = 11;
+            }
+            levelEmbed = new EmbedBuilder({title: 'Level Leaderboard',color:0x0021f1,description:leaderboard})
+            .setFooter({text:`Pantopia Levelling`});
+            ctx.reply({embeds:[levelEmbed]});
             break;
     }
     connection.end(errorCallback);
