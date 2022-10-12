@@ -9,13 +9,23 @@ class CommandParser {
     client.on('interactionCreate', async (ctx) => {
       if (!ctx.isChatInputCommand) return;
       const command = this.#commands[ctx.commandName];
-      if (command.permissons) {
-        const check = command.permissons(ctx);
-        if (!check.passed) {
+      if (command.guildOnly && !ctx.guild) {
+        ctx.reply('This command can\'t be used in DMs!');
+        return;
+      }
+      if (command.permissions) {
+        const check = command.permissions(ctx);
+        if (!check.pass) {
           ctx.reply(check.message);
+          return;
         }
       };
-      await command.run(ctx);
+      try {
+        await command.run(ctx);
+      } catch (error) {
+        ctx.channel.send(`Fatal Error!\n${error}`);
+        console.error(error);
+      }
     });
 
     this.#client = client;
@@ -26,12 +36,12 @@ class CommandParser {
   }
 
   async registerAppCommands(guildId = null) {
-    for (const command in this.#commands) {
+    for (const commandName in this.#commands) {
       if (guildId) {
         const guild = await this.#client.guilds.fetch(guildId);
-        guild.commands.create(command);
+        await guild.commands.create(this.#commands[commandName].build);
       } else {
-        this.#client.application.commands.create(command);
+        await this.#client.application.commands.create(this.#commands[commandName].build);
       }
     }
     console.log('Registered app command/s sucessfully.');
@@ -41,9 +51,9 @@ class CommandParser {
     for (const commandId of commandIds) {
       if (guildId) {
         const guild = await this.#client.guilds.fetch(guildId);
-        guild.commands.delete(commandId);
+        await guild.commands.delete(commandId);
       } else {
-        this.#client.application.commands.delete(commandId);
+        await this.#client.application.commands.delete(commandId);
       }
     }
     console.log('Deleted app command/s sucessfully.');

@@ -21,13 +21,13 @@ execute() {
     connection.connect((error) => {
         if (error) throw error;
     });
-    client.on('messageCreate', async (message) => {
-        const levelData = await queryResult(`SELECT * FROM user_levels WHERE id = '${message.author.id}'`, connection);
+    client.on('messageCreate', async (msg) => {
+        const levelData = await queryResult({sql:`SELECT * FROM user_levels WHERE id = ?`,values:[msg.author.id]},connection);
         const currentDate = Date.now();
-        if (message.author.bot) return;
+        if (msg.author.bot) return;
         if (!levelData.length) {
-            connection.query(`INSERT INTO user_levels (id, level, xp, last_msg) VALUES ('${message.author.id}', 1, 10, ${currentDate})`, errorCallback)
-            await message.reply('This must be your first message here, welcome \\:D');
+            connection.query({sql:`INSERT INTO user_levels (id, level, xp, last_msg) VALUES (?, 1, 10, ?)`,values:[msg.author.id,currentDate]},errorCallback)
+            await msg.reply('This must be your first message here, welcome \\:D');
         } else if (levelData[0].last_msg + config.levels.xpCooldown <= currentDate) {
             let level = levelData[0].level;
             let xp = levelData[0].xp;
@@ -35,9 +35,9 @@ execute() {
             const nextLevelXp = Math.ceil(config.levels.baseXpRequired + (config.levels.baseXpRequired * config.levels.levelXpMultiplier * (level - 1)));
             if (xp >= nextLevelXp) {
                 level++;
-                await message.reply(`Congrats! You've just leveled up to level **${level}**!`);
+                await msg.reply(`Congrats! You've just leveled up to level **${level}**!`);
             }
-            connection.query(`UPDATE user_levels SET level = ${level}, xp = ${xp}, last_msg = ${currentDate} WHERE id = '${message.author.id}'`);
+            connection.query({sql:`UPDATE user_levels SET level = ?, xp = ?, last_msg = ? WHERE id = ?`,values:[level,xp,currentDate,msg.author.id]},errorCallback);
         }
     })
 }
@@ -71,19 +71,20 @@ function resolveMemberName(member) {
  * @param {Interaction} ctx 
  */
 async function levelCommand(ctx) {
+    let levelData;
+    const connection = mysql.createConnection({
+        host: config.database.host,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: config.database.name
+    });
+    connection.connect(errorCallback);
     switch(ctx.options.getSubcommand(false)) {
         case 'get':
-            const connection = mysql.createConnection({
-                host: config.database.host,
-                user: process.env.DB_USER,
-                password: process.env.DB_PASSWORD,
-                database: config.database.name
-            });
-            connection.connect(errorCallback);
             let levelEmbed;
             const memberOption = ctx.options.getUser('member', false);
             const member = memberOption ? await ctx.guild.members.fetch(memberOption.id) : ctx.member;
-            const levelData = await queryResult(`SELECT * FROM user_levels WHERE id = '${member.id}'`, connection);
+            levelData = await queryResult({sql:`SELECT * FROM user_levels WHERE id = ?`,values:[member.id]}, connection);
             if (!levelData.length) {
                 levelEmbed = new EmbedBuilder({title: 'Level Stats',color:member.displayColor,description:`Data not found.`})
                 .setAuthor({name:resolveMemberName(member),iconURL: member.displayAvatarURL()})
@@ -95,12 +96,13 @@ async function levelCommand(ctx) {
                 .setFooter({text:`Pantopia Levelling - ${member.id}`});
             }
             ctx.reply({embeds:[levelEmbed]});
-            connection.end(errorCallback);
             break;
         case 'leaderboard':
-            ctx.reply('wip');
+            levelData = await queryResult({sql:`SELECT * FROM user_levels ORDER BY 'xp';`},connection);
+            ctx.reply(JSON.stringify(levelData));
             break;
     }
+    connection.end(errorCallback);
 } 
 
 const levelBuild = new SlashCommandBuilder()
@@ -127,7 +129,8 @@ const levelBuild = new SlashCommandBuilder()
 const LevelCommands = {
     levels: {
         build: levelBuild,
-        run: levelCommand
+        run: levelCommand,
+        guildOnly: true
     }
 }
 

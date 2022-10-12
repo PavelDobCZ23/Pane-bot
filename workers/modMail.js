@@ -27,7 +27,7 @@ class ModmailWorker {
             let logLine, guild, messageEmbed, member;
             if (message.content.startsWith('!!') || message.author.bot) return;
             if (message.channel.isDMBased()) {
-                const lookupMember = await queryResult(`SELECT * FROM open_modmails WHERE member_id = '${message.author.id}'`, connection);
+                const lookupMember = await queryResult({sql:`SELECT * FROM open_modmails WHERE member_id = ?`,values:[message.author.id]}, connection);
                 if (lookupMember.length) {
                     const addedAttachments = message.attachments.size ? '(attached file/s)' : '';
                     guild = this.#client.guilds.cache.get(config.guildId);
@@ -41,7 +41,7 @@ class ModmailWorker {
                     
                 }
             } else if (message.channel.parentId === config.modmail.categoryId) {
-                const lookupChannel = await queryResult(`SELECT * FROM open_modmails WHERE channel_id = '${message.channelId}'`, connection);
+                const lookupChannel = await queryResult({sql:`SELECT * FROM open_modmails WHERE channel_id = ?`,values:[message.channelId]}, connection);
                 if (lookupChannel.length) {
                     const addedAttachments = message.attachments.size ? '(attached file/s)' : '';
                     guild = message.guild;
@@ -64,6 +64,10 @@ class ModmailWorker {
         });
     }
     #client = null;
+}
+
+function errorCallback(error) {
+    if (error) throw error;
 }
 
 function resolveMemberName(member) {
@@ -109,7 +113,7 @@ async function asyncReadFile(filepath, options = null) {
                 ctx.reply('Modmail should be only opened in direct messages!');
                 return;
             }
-            const memberLookup = await queryResult(`SELECT * FROM open_modmails WHERE member_id = '${ctx.user.id}'`, connection);
+            const memberLookup = await queryResult({sql:`SELECT * FROM open_modmails WHERE member_id = ?`,values:[ctx.user.id]}, connection);
             if (memberLookup.length) {
                 ctx.reply('You can only have one ticket open at a time!');
                 break;
@@ -134,9 +138,7 @@ async function asyncReadFile(filepath, options = null) {
             });
 
             //Database 2nd part
-            connection.query(`INSERT INTO open_modmails (member_id, channel_id) VALUES (${ctx.user.id}, ${channel.id})`, (error) => {
-                if (error) throw error;
-            });
+            connection.query({sql:`INSERT INTO open_modmails (member_id, channel_id) VALUES (?,?)`,values:[ctx.user.id,channel.id]}, errorCallback);
 
             //Confirmation message
             modmailEmbed = new EmbedBuilder({title: 'Modmail Ticket Opened', color: 0xfea515, timestamp: new Date()})
@@ -150,10 +152,10 @@ async function asyncReadFile(filepath, options = null) {
             let modmailLookup;
             if (ctx.channel.isDMBased()) {
                 guild = ctx.client.guilds.cache.get(config.guildId);
-                modmailLookup = await queryResult(`SELECT * FROM open_modmails WHERE member_id = '${ctx.user.id}'`,connection);
+                modmailLookup = await queryResult({sql:`SELECT * FROM open_modmails WHERE member_id = ?`,values:[ctx.user.id]},connection);
             } else if (ctx.channel.parentId === config.modmail.categoryId) {
                 guild = ctx.guild;
-                modmailLookup = await queryResult(`SELECT * FROM open_modmails WHERE channel_id = '${ctx.channel.id}'`,connection);
+                modmailLookup = await queryResult({sql:`SELECT * FROM open_modmails WHERE channel_id = ?`,values:[ctx.channel.id]},connection);
             } else {
                 ctx.reply('You can only close modmail inside a ticket channel!');
                 break;
@@ -189,9 +191,7 @@ async function asyncReadFile(filepath, options = null) {
                 ctx.channel.send('Could not message the member, they might\'ve left the server.');
             }
 
-            connection.query(`DELETE FROM open_modmails WHERE member_id = ${member.id}`, (error) => {
-                if (error) throw error
-            });
+            connection.query({sqL:`DELETE FROM open_modmails WHERE member_id = ?`,values:[member.id]},errorCallback);
 
             ctx.reply('Ticket successfully closed!');
             channel.send('This channel will be deleted in 15 seconds!');
